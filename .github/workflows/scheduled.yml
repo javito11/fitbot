@@ -2,11 +2,11 @@ name: Scheduled FitBot run
 
 on:
   schedule:
-  - cron: "5,50 9,18 * * *"
+  - cron: "5,50 9,18,22 * * *"
 
 jobs:
   run:
     runs-on: ubuntu-latest
     steps:
       - name: Run fitbot
-        run: docker run -e email=${{ secrets.EMAIL }} -e password=${{ secrets.PASSWORD }} -e booking-goals={'\"0\":{\"time\":\"1845\"\,\"name\":\"BASE\"}\,\"1\":{\"time\":\"1845\"\,\"name\":\"BASE\"}\,\"2\":{\"time\":\"1845\"\,\"name\":\"BASE\"},\"3\":{\"time\":\"1845\"\,\"name\":\"BASE\"},\"4\":{\"time\":\"1730\"\,\"name\":\"BASE\"},\"5\":{\"time\":\"0900\"\,\"name\":\"TeamWOD\"}'} -e box-name=areacrossfit -e box-id=10446 -e days-in-advance=2 pablobuenaposada/fitbot
+        run: docker run -e email=${{ secrets.EMAIL }} -e password=${{ secrets.PASSWORD }} -e booking-goals={'\"0\":{\"time\":\"1845\"\,\"name\":\"BASE\"}\,\"1\":{\"time\":\"1845\"\,\"name\":\"BASE\"}\,\"2\":{\"time\":\"1845\"\,\"name\":\"BASE\"},\"3\":{\"time\":\"1845\"\,\"name\":\"BASE\"},\"4\":{\"time\":\"1730\"\,\"name\":\"BASE\"},\"5\":{\"time\":\"0900\"\,\"name\":\"TeamWOD\"}'} -e box-name=areacrossfit -e box-id=10446 -e days-in-advance=1 pablobuenaposada/fitbot
