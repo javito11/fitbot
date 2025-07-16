@@ -58,7 +58,7 @@ def main(
         logger.info(str(e))
         return
     client = AimHarderClient(
-        email=email, password=passw, box_id=box_id, box_name=box_name
+        email=email, passw=passw, box_id=box_id, box_name=box_name
     )
     classes = client.get_classes(target_day, family_id)
     _class = get_class_to_book(classes, target_time, target_name)
