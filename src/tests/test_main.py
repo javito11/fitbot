@@ -114,7 +114,7 @@ class TestMain:
             }
             main(
                 email="foo",
-                password="bar",
+                passw="bar",
                 booking_goals={"0": {"time": "1700", "name": "Provenza"}},
                 box_name="foo",
                 box_id=1,
