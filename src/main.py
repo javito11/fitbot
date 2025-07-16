@@ -58,7 +58,7 @@ def main(
         logger.info(str(e))
         return
     client = AimHarderClient(
-        email=email, password=password, box_id=box_id, box_name=box_name
+        email=email, password=pass, box_id=box_id, box_name=box_name
     )
     classes = client.get_classes(target_day, family_id)
     _class = get_class_to_book(classes, target_time, target_name)
@@ -88,7 +88,7 @@ if __name__ == "__main__":
     """
     parser = argparse.ArgumentParser()
     parser.add_argument("--email", required=True, type=str)
-    parser.add_argument("--password", required=True, type=str)
+    parser.add_argument("--pass", required=True, type=str)
     parser.add_argument("--booking-goals", required=True, type=json.loads)
     parser.add_argument("--box-name", required=True, type=str)
     parser.add_argument("--box-id", required=True, type=int)
