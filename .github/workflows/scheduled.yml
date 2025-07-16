@@ -4,7 +4,7 @@ on:
   schedule:
   - cron: '0,5 7 * * 4'
   #- cron: '50,59 16 * * 6,0,1,2,3'
-  - cron: '10 15 * * 6,0,1,2,3'
+  - cron: '40 15 * * 6,0,1,2,3'
 
 
 jobs:
@@ -12,5 +12,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Run fitbot
-        run: docker run -e email=${{ secrets.EMAIL }} -e passw${{ secrets.PASSWORD }} -e booking-goals={'\"0\":{\"time\":\"1845\"\,\"name\":\"BASE\"}\,\"1\":{\"time\":\"1845\"\,\"name\":\"BASE\"}\,\"2\":{\"time\":\"1900\"\,\"name\":\"Hybrid\"},\"3\":{\"time\":\"1845\"\,\"name\":\"BASE\"},\"4\":{\"time\":\"1730\"\,\"name\":\"BASE\"},\"5\":{\"time\":\"0900\"\,\"name\":\"TeamWOD\"}'} -e box-name=basefitnessbox -e box-id=10446 -e days-in-advance=2 javito11/fitbot
+        run: docker run -e email=${{ secrets.EMAIL }} -e passw${{ secrets.PASSWORD }} -e booking-goals={'\"0\":{\"time\":\"1845\"\,\"name\":\"BASE\"}\,\"1\":{\"time\":\"1845\"\,\"name\":\"BASE\"}\,\"2\":{\"time\":\"1900\"\,\"name\":\"Hybrid\"},\"3\":{\"time\":\"1845\"\,\"name\":\"BASE\"},\"4\":{\"time\":\"1730\"\,\"name\":\"BASE\"},\"5\":{\"time\":\"0900\"\,\"name\":\"TeamWOD\"}'} -e box-name=basefitnessbox -e box-id=10446 -e days-in-advance=2 pablobuenaposada/fitbot
         #run: docker run -e email="paulagdp@outlook.com" -e password="Hyrox1234" -e booking-goals={'\"0\":{\"time\":\"0800\"\,\"name\":\"HYROX-Endurance\"}\,\"1\":{\"time\":\"0800\"\,\"name\":\"HYROX-Endurance\"}\,\"2\":{\"time\":\"1700\"\,\"name\":\"HYROX-Endurance\"},\"3\":{\"time\":\"0800\"\,\"name\":\"HYROX-Endurance\"},\"4\":{\"time\":\"0000\"\,\"name\":\"HYROX-Endurance\"},\"5\":{\"time\":\"0000\"\,\"name\":\"HYROX-Endurance\"}'} -e box-name=hybridboxgrau -e box-id=8244 -e days-in-advance=1 pablobuenaposada/fitbot
