@@ -49,7 +49,7 @@ def get_class_to_book(classes: list[dict], target_time: str, class_name: str):
 
 
 def main(
-    email, passw, booking_goals, box_name, box_id, days_in_advance, family_id=None
+    email, password, booking_goals, box_name, box_id, days_in_advance, family_id=None
 ):
     target_day = datetime.today() + timedelta(days=days_in_advance)
     try:
@@ -58,7 +58,7 @@ def main(
         logger.info(str(e))
         return
     client = AimHarderClient(
-        email=email, passw=passw, box_id=box_id, box_name=box_name
+        email=email, password=password, box_id=box_id, box_name=box_name
     )
     classes = client.get_classes(target_day, family_id)
     _class = get_class_to_book(classes, target_time, target_name)
@@ -88,7 +88,7 @@ if __name__ == "__main__":
     """
     parser = argparse.ArgumentParser()
     parser.add_argument("--email", required=True, type=str)
-    parser.add_argument("--passw", required=True, type=str)
+    parser.add_argument("--password", required=True, type=str)
     parser.add_argument("--booking-goals", required=True, type=json.loads)
     parser.add_argument("--box-name", required=True, type=str)
     parser.add_argument("--box-id", required=True, type=int)
