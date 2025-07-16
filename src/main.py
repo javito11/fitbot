@@ -80,7 +80,7 @@ if __name__ == "__main__":
     """
     python src/main.py
      --email your.email@mail.com
-     --passw 1234
+     --passw 12345
      --box-name lahuellacrossfit
      --box-id 3984
      --booking-goal '{"0":{"time": "1815", "name": "Provenza"}}'
