@@ -1,9 +1,9 @@
 name: Scheduled FitBot run
 
 on:
-  #schedule:
+  schedule:
   #- cron: '58/1 4 * * *'
-  - cron: '0-2 5 * * *'
+  - cron: "5,10 5 * * *"
   #- cron: '50,59 16 * * 6,0,1,2,3'
   #- cron: '0 9 * * 6,0,1,2,3'
   workflow_dispatch:
