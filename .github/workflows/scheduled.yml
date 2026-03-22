@@ -1,19 +1,82 @@
-name: Scheduled FitBot run
+name: FitBot — Reserva automática
 
 on:
   schedule:
-  #- cron: '58/1 4 * * *'
-  - cron: "5,10 5 * * *"
-  #- cron: '50,59 16 * * 6,0,1,2,3'
-  #- cron: '0 9 * * 6,0,1,2,3'
+    # Ejecuta cada día a las 06:00 UTC (08:00 hora España)
+    # Ajusta el cron desde el frontal HTML y actualiza este archivo
+    - cron: '0 6 * * 1-5'
   workflow_dispatch:
-
+    inputs:
+      dry_run:
+        description: 'Dry run (no hace reservas reales)'
+        required: false
+        default: 'false'
+        type: boolean
 
 jobs:
-  run:
+  book:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Run fitbot
-        #run: docker run -e email=${{ secrets.EMAILP }} -e password=${{ secrets.PASSWORDP }} -e booking-goals={'\"0\":{\"time\":\"0800\"\,\"name\":\"HYROX-Endurance\"}\,\"1\":{\"time\":\"0800\"\,\"name\":\"HYROX-Endurance\"}\,\"2\":{\"time\":\"0000\"\,\"name\":\"HYROX-Endurance\"},\"3\":{\"time\":\"2000\"\,\"name\":\"HYROX-Endurance\"},\"4\":{\"time\":\"0000\"\,\"name\":\"HYROX-Endurance\"},\"5\":{\"time\":\"0000\"\,\"name\":\"HYROX-Endurance\"}'} -e box-name=hybridboxgrau -e box-id=8244 -e days-in-advance=1  pablobuenaposada/fitbot
-        run: docker run -e email=${{ secrets.EMAIL }} -e password=${{ secrets.PASSWORD }} -e booking-goals={'\"0\":{\"time\":\"0000\"\,\"name\":\"BASE\"}\,\"1\":{\"time\":\"0000\"\,\"name\":\"BASE\"}\,\"2\":{\"time\":\"1900\"\,\"name\":\"HYROX\"},\"3\":{\"time\":\"1900\"\,\"name\":\"HYROX\"},\"4\":{\"time\":\"1730\"\,\"name\":\"BASE\"},\"5\":{\"time\":\"0900\"\,\"name\":\"HYROX\"}'} -e box-name=hybridboxeliana -e box-id=10656 -e days-in-advance=1 -e proxy=socks5://89.58.45.94:34472 pablobuenaposada/fitbot
-        #run: docker run -e email=paulagdp@outlook.com -e password=Hyrox1234 -e booking-goals={'\"0\":{\"time\":\"0800\"\,\"name\":\"HYROX-Endurance\"}\,\"1\":{\"time\":\"0800\"\,\"name\":\"HYROX-Endurance\"}\,\"2\":{\"time\":\"0800\"\,\"name\":\"HYROX-Endurance\"},\"3\":{\"time\":\"2000\"\,\"name\":\"HYROX-Endurance\"},\"4\":{\"time\":\"0000\"\,\"name\":\"HYROX-Endurance\"},\"5\":{\"time\":\"0000\"\,\"name\":\"HYROX-Endurance\"}'} -e box-name=hybridboxgrau -e box-id=8244 -e days-in-advance=1 -e proxy=socks5://57.129.81.201:1080 pablobuenaposada/fitbot
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Leer config.json y construir comando
+        id: build_cmd
+        run: |
+          # Leer config.json del repo
+          CONFIG=$(cat config.json)
+
+          BOX_NAME=$(echo $CONFIG | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['box_name'])")
+          BOX_ID=$(echo $CONFIG | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['box_id'])")
+          DAYS_ADVANCE=$(echo $CONFIG | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['days_in_advance'])")
+          FAMILY_ID=$(echo $CONFIG | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('family_id',''))")
+          PROXY=$(echo $CONFIG | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('proxy',''))")
+          BOOKING_GOALS=$(echo $CONFIG | python3 -c "import sys,json; d=json.load(sys.stdin); print(json.dumps(d['booking_goals']))")
+
+          echo "box_name=$BOX_NAME" >> $GITHUB_OUTPUT
+          echo "box_id=$BOX_ID" >> $GITHUB_OUTPUT
+          echo "days_advance=$DAYS_ADVANCE" >> $GITHUB_OUTPUT
+          echo "family_id=$FAMILY_ID" >> $GITHUB_OUTPUT
+          echo "proxy=$PROXY" >> $GITHUB_OUTPUT
+          echo "booking_goals=$BOOKING_GOALS" >> $GITHUB_OUTPUT
+
+      - name: Ejecutar FitBot
+        run: |
+          CMD="docker run \
+            -e email=${{ secrets.FITBOT_EMAIL }} \
+            -e password=${{ secrets.FITBOT_PASSWORD }} \
+            -e box-name=${{ steps.build_cmd.outputs.box_name }} \
+            -e box-id=${{ steps.build_cmd.outputs.box_id }} \
+            -e days-in-advance=${{ steps.build_cmd.outputs.days_advance }} \
+            -e booking-goals='${{ steps.build_cmd.outputs.booking_goals }}'"
+
+          # Añadir family-id si está configurado
+          if [ -n "${{ steps.build_cmd.outputs.family_id }}" ]; then
+            CMD="$CMD -e family-id=${{ steps.build_cmd.outputs.family_id }}"
+          fi
+
+          # Añadir proxy si está configurado
+          if [ -n "${{ steps.build_cmd.outputs.proxy }}" ]; then
+            CMD="$CMD -e proxy=${{ steps.build_cmd.outputs.proxy }}"
+          fi
+
+          # Dry run: no ejecuta, solo muestra el comando
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            echo "=== DRY RUN — Comando que se ejecutaría ==="
+            echo "$CMD pablobuenaposada/fitbot"
+            echo "==========================================="
+            exit 0
+          fi
+
+          CMD="$CMD pablobuenaposada/fitbot"
+          eval $CMD
+
+      - name: Resumen de ejecución
+        if: always()
+        run: |
+          echo "## FitBot — Resumen" >> $GITHUB_STEP_SUMMARY
+          echo "- **Box:** ${{ steps.build_cmd.outputs.box_name }} (ID: ${{ steps.build_cmd.outputs.box_id }})" >> $GITHUB_STEP_SUMMARY
+          echo "- **Antelación:** ${{ steps.build_cmd.outputs.days_advance }} días" >> $GITHUB_STEP_SUMMARY
+          echo "- **Booking goals:** \`${{ steps.build_cmd.outputs.booking_goals }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Fecha:** $(date '+%Y-%m-%d %H:%M UTC')" >> $GITHUB_STEP_SUMMARY
