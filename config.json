@@ -1,0 +1,11 @@
+{
+  "box_name": "lahuellacrossfit",
+  "box_id": "3984",
+  "days_in_advance": 3,
+  "family_id": "",
+  "proxy": "",
+  "booking_goals": {
+    "0": { "time": "1815", "name": "ARIBAU" },
+    "2": { "time": "1815", "name": "ARIBAU" }
+  }
+}
