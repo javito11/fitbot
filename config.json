@@ -1,11 +1,19 @@
 {
-  "box_name": "lahuellacrossfit",
-  "box_id": "3984",
-  "days_in_advance": 3,
+  "box_name": "hybridboxeliana",
+  "box_id": "10656",
+  "days_in_advance": 1,
   "family_id": "",
   "proxy": "",
+  "cron": "0 6 * * 1-5",
+  "dry_run": false,
   "booking_goals": {
-    "0": { "time": "1815", "name": "ARIBAU" },
-    "2": { "time": "1815", "name": "ARIBAU" }
+    "2": {
+      "time": "1800",
+      "name": "Hyrox"
+    },
+    "4": {
+      "time": "1700",
+      "name": "Hyrox"
+    }
   }
 }
