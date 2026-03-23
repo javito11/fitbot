@@ -1,0 +1,78 @@
+name: Scheduled Booking
+
+on:
+  schedule:
+    # Ajusta esta hora (en UTC) según cuándo abra las clases tu gimnasio.
+    - cron: '0 5 * * 1-5' 
+  workflow_dispatch:
+
+jobs:
+  book_class:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: "pyproject.toml"
+
+      - name: Install dependencies
+        run: uv sync --all-extras --dev
+
+      - name: Load Config from config.json
+        run: |
+          echo "Cargando configuración desde config.json..."
+          # Usamos jq para leer el JSON e inyectarlo en las variables de entorno de GitHub
+          echo "box-name=$(jq -r '."box-name"' config.json)" >> $GITHUB_ENV
+          echo "box-id=$(jq -r '."box-id"' config.json)" >> $GITHUB_ENV
+          echo "days-in-advance=$(jq -r '."days-in-advance"' config.json)" >> $GITHUB_ENV
+          # Para los booking-goals usamos -c para que comprima el JSON en una sola línea de texto
+          echo "booking-goals=$(jq -c '."booking-goals"' config.json)" >> $GITHUB_ENV
+
+      - name: Run FitBot with Proxy Rotation
+        env:
+          # SOLO dejamos como secretos el usuario y la contraseña
+          email: ${{ secrets.FITBOT_EMAIL }}
+          password: ${{ secrets.FITBOT_PASSWORD }}
+        run: |
+          echo "🔍 Obteniendo lista de proxies españoles gratuitos..."
+          PROXY_LIST=$(curl -s "https://api.proxyscrape.com/v2/?request=displayproxies&protocol=http&timeout=5000&country=ES&ssl=yes&anonymity=all")
+          PROXIES=$(echo "$PROXY_LIST" | tr -d '\r' | grep -v '^$' | head -n 5)
+          
+          if [ -z "$PROXIES" ]; then
+            echo "⚠️ No se encontraron proxies. Intentando conexión directa..."
+            uv run python src/main.py
+            exit $?
+          fi
+
+          SUCCESS=0
+          
+          for PROXY_IP in $PROXIES; do
+            echo "----------------------------------------"
+            echo "🚀 Intentando reserva con proxy: http://$PROXY_IP"
+            export proxy="http://$PROXY_IP"
+            
+            uv run python src/main.py
+            
+            if [ $? -eq 0 ]; then
+              echo "✅ ¡Éxito! El script funcionó correctamente con este proxy."
+              SUCCESS=1
+              break
+            else
+              echo "❌ El proxy falló (Timeout o Bloqueado). Pasando al siguiente..."
+            fi
+          done
+
+          if [ $SUCCESS -eq 0 ]; then
+            echo "💀 Los 5 intentos con proxy han fallado. Revisa los logs de GitHub Actions."
+            exit 1 
+          fi
