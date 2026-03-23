@@ -1,12 +1,12 @@
 {
-  "box_name": "hybridboxeliana",
-  "box_id": 10656,
-  "days_in_advance": 1,
+  "box-name": "hybridboxeliana",
+  "box-id": 10656,
+  "days-in-advance": 1,
   "family_id": "",
   "proxy": "",
   "cron": "0 6 * * 1-5",
   "dry_run": false,
-  "booking_goals": {
+  "booking-goals": {
     "2": {
       "time": "1800",
       "name": "Hyrox"
