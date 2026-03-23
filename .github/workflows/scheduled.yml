@@ -2,7 +2,6 @@ name: Scheduled Booking
 
 on:
   schedule:
-    # Ajusta esta hora (en UTC) según cuándo abra las clases tu gimnasio.
     - cron: '0 5 * * 1-5' 
   workflow_dispatch:
 
@@ -31,18 +30,13 @@ jobs:
       - name: Load Config from config.json
         run: |
           echo "Cargando configuración desde config.json..."
-          # Usamos jq para leer el JSON e inyectarlo en las variables de entorno de GitHub
-          echo "box-name=$(jq -r '."box-name"' config.json)" >> $GITHUB_ENV
-          echo "box-id=$(jq -r '."box-id"' config.json)" >> $GITHUB_ENV
-          echo "days-in-advance=$(jq -r '."days-in-advance"' config.json)" >> $GITHUB_ENV
-          # Para los booking-goals usamos -c para que comprima el JSON en una sola línea de texto
-          echo "booking-goals=$(jq -c '."booking-goals"' config.json)" >> $GITHUB_ENV
+          # Guardamos las variables con nombres en MAYÚSCULAS y guiones bajos para que bash las lea bien
+          echo "BOX_NAME=$(jq -r '."box-name"' config.json)" >> $GITHUB_ENV
+          echo "BOX_ID=$(jq -r '."box-id"' config.json)" >> $GITHUB_ENV
+          echo "DAYS_IN_ADVANCE=$(jq -r '."days-in-advance"' config.json)" >> $GITHUB_ENV
+          echo "BOOKING_GOALS=$(jq -c '."booking-goals"' config.json)" >> $GITHUB_ENV
 
       - name: Run FitBot with Proxy Rotation
-        env:
-          # SOLO dejamos como secretos el usuario y la contraseña
-          email: ${{ secrets.FITBOT_EMAIL }}
-          password: ${{ secrets.FITBOT_PASSWORD }}
         run: |
           echo "🔍 Obteniendo lista de proxies españoles gratuitos..."
           PROXY_LIST=$(curl -s "https://api.proxyscrape.com/v2/?request=displayproxies&protocol=http&timeout=5000&country=ES&ssl=yes&anonymity=all")
@@ -50,7 +44,14 @@ jobs:
           
           if [ -z "$PROXIES" ]; then
             echo "⚠️ No se encontraron proxies. Intentando conexión directa..."
-            uv run python src/main.py
+            # Ejecución SIN proxy pasando todos los argumentos
+            uv run python src/main.py \
+              --email "${{ secrets.EMAIL }}" \
+              --password "${{ secrets.PASSWORD }}" \
+              --box-name "$BOX_NAME" \
+              --box-id "$BOX_ID" \
+              --days-in-advance "$DAYS_IN_ADVANCE" \
+              --booking-goals "$BOOKING_GOALS"
             exit $?
           fi
 
@@ -59,16 +60,23 @@ jobs:
           for PROXY_IP in $PROXIES; do
             echo "----------------------------------------"
             echo "🚀 Intentando reserva con proxy: http://$PROXY_IP"
-            export proxy="http://$PROXY_IP"
             
-            uv run python src/main.py
+            # Ejecución CON proxy pasando todos los argumentos
+            uv run python src/main.py \
+              --email "${{ secrets.EMAIL }}" \
+              --password "${{ secrets.PASSWORD }}" \
+              --box-name "$BOX_NAME" \
+              --box-id "$BOX_ID" \
+              --days-in-advance "$DAYS_IN_ADVANCE" \
+              --booking-goals "$BOOKING_GOALS" \
+              --proxy "http://$PROXY_IP"
             
             if [ $? -eq 0 ]; then
               echo "✅ ¡Éxito! El script funcionó correctamente con este proxy."
               SUCCESS=1
               break
             else
-              echo "❌ El proxy falló (Timeout o Bloqueado). Pasando al siguiente..."
+              echo "❌ El proxy falló. Pasando al siguiente..."
             fi
           done
 
