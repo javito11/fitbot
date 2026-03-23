@@ -4,7 +4,7 @@ on:
   schedule:
     # Ejecuta cada día a las 06:00 UTC (08:00 hora España)
     # Ajusta el cron desde el frontal HTML y actualiza este archivo
-    - cron: '0 6 * * 1-5'
+    - cron: '0 0 * * 1-5'
   workflow_dispatch:
     inputs:
       dry_run:
