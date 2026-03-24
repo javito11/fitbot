@@ -63,8 +63,8 @@ jobs:
             
             # Ejecución CON proxy pasando todos los argumentos
             uv run python src/main.py \
-              --email "${{ secrets.EMAIL }}" \
-              --password "${{ secrets.PASSWORD }}" \
+              --email "${{ secrets.FITBOT_EMAIL }}" \
+              --password "${{ secrets.FITBOT_PASSWORD }}" \
               --box-name "$BOX_NAME" \
               --box-id "$BOX_ID" \
               --days-in-advance "$DAYS_IN_ADVANCE" \
