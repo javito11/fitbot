@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(uv run:*)",
+      "Bash(python -c \"import ast; ast.parse\\(open\\('C:/Users/Javier Sanchís/fitbot/fitbot/ui/app.py'\\).read\\(\\)\\); print\\('OK - sin errores de sintaxis'\\)\")",
+      "Bash(chmod +x \"C:/Users/Javier Sanchís/fitbot/fitbot/ui.sh\")"
+    ]
+  }
+}

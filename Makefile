@@ -1,6 +1,9 @@
 venv:
 	uv sync
 
+ui: venv
+	uv run python ui/app.py
+
 format: venv
 	uv run ruff format
 	uv run ruff check --fix
