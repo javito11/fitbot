@@ -2,7 +2,7 @@ name: Scheduled Booking
 
 on:
   schedule:
-    - cron: '0 5 * * 2,4,5' 
+    - cron: '0 5 * * 2,4' 
   workflow_dispatch:
 
 jobs:
